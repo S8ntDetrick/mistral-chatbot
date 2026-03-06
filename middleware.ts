@@ -1,29 +1,16 @@
-import { clerkMiddleware, getAuth } from '@clerk/nextjs/server';
+import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
-// default middleware for Clerk
+// Default Clerk middleware protects routes like /chat
 export default clerkMiddleware();
 
-// configure which routes this runs on
+// Configure which routes this middleware runs on
 export const config = {
   matcher: [
-    '/',          // root page
-    '/chat/:path*' // chat page and any subpaths
+    '/chat/:path*', // Protect /chat and subpaths
+    // other routes can be added here if needed
   ],
 };
 
-// Optional middleware function for redirects
-export function middleware(req) {
-  const { userId } = getAuth(req);
-
-  const url = req.nextUrl.clone();
-
-  // If user is logged in and visits root '/', redirect to /chat
-  if (url.pathname === '/' && userId) {
-    url.pathname = '/chat';
-    return NextResponse.redirect(url);
-  }
-
-  // If user is not logged in and tries to access /chat, Clerk middleware handles redirect to login
-  return NextResponse.next();
-}
+// Note: We removed server-side redirects from '/' to avoid Edge function issues.
+// Redirect for logged-in users on '/' will be handled client-side.
