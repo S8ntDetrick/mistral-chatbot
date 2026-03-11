@@ -22,7 +22,7 @@ export default function SignUpPage() {
             fontWeight: "600",
           }}
         >
-          Signup to speak with S8NT AI
+          Create a free account to join the waitlist
         </h1>
 
         <SignUp
