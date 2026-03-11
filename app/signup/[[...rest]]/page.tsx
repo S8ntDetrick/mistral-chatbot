@@ -12,7 +12,7 @@ export default function SignUpPage() {
         backgroundColor: "#0e0e0e", // dark grey backdrop
       }}
     >
-      <div style={{ width: "417px", textAlign: "center" }}>
+      <div style={{ width: "400px", textAlign: "center" }}>
         <h1
           style={{
             textAlign: "center",
@@ -22,7 +22,7 @@ export default function SignUpPage() {
             fontWeight: "600",
           }}
         >
-          Create a free account to join the waitlist
+          Create your S8NT account
         </h1>
 
         <SignUp
