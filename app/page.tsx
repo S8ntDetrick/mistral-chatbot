@@ -111,7 +111,7 @@ export default function HomePage() {
             fontWeight: 800,
           }}
         >
-          Help Build the First AI Research Platform Centered on Black History,
+          Help Build the First AI Research Platform Centered on History,
           Culture, and Intellectual Inquiry
         </h1>
 
