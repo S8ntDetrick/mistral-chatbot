@@ -8,7 +8,7 @@ export default function FounderPage() {
   const { isSignedIn, user } = useUser();
   const router = useRouter();
 
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/5kQ4gBak8fWX4dz3wH9Ve00';
+const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/7sY28tgIwcKL25r7MX9Ve01';
 
 const handlePayment = () => {
   if (!isSignedIn) {
@@ -106,7 +106,7 @@ const handlePayment = () => {
               marginBottom: '30px',
             }}
           >
-            Founder Access — $40
+            Founder Access — $100
           </div>
 
           <div
