@@ -111,8 +111,7 @@ export default function HomePage() {
             fontWeight: 800,
           }}
         >
-          Help Build the First AI Research Platform Centered on History,
-          Culture, and Intellectual Inquiry
+          S8NT AI. Designed for Research, Culture, and Real-World Application
         </h1>
 
         <p
@@ -124,9 +123,7 @@ export default function HomePage() {
             color: '#d1d5db',
           }}
         >
-          S8NT AI is being built to give users a better way to explore history,
-          ask deeper questions, and access culturally grounded knowledge through
-          AI. Become a founding member and help bring the platform to life.
+          S8NT AI is built for deeper inquiry — helping users explore history, culture, and complex ideas — while also providing practicaltools for writing, communication, and business use.
         </p>
 
         <div
@@ -150,6 +147,58 @@ export default function HomePage() {
             }}
           />
         </div>
+
+<section
+  style={{
+    maxWidth: '1100px',
+    margin: '0 auto',
+    padding: '40px 20px 60px',
+    textAlign: 'center',
+  }}
+>
+  <h2
+    style={{
+      fontSize: '1.8rem',
+      marginBottom: '16px',
+      fontWeight: 800,
+    }}
+  >
+    From Research to Real-World Use
+  </h2>
+
+  <p
+    style={{
+      maxWidth: '680px',
+      margin: '0 auto 30px',
+      color: '#d1d5db',
+      lineHeight: 1.7,
+    }}
+  >
+    S8NT AI isn’t just for exploring ideas — it helps you apply them.
+    Generate website copy, refine messaging, and turn knowledge into
+    real business output.
+  </p>
+
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+    }}
+  >
+    <Image
+      src="/web-copy.png"
+      alt="S8NT AI Website Copy Example"
+      width={380}
+      height={300}
+      style={{
+        borderRadius: '16px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+        maxWidth: '100%',
+        height: 'auto',
+      }}
+    />
+  </div>
+</section>
 
         <div
           style={{
@@ -223,8 +272,8 @@ export default function HomePage() {
               text: 'Most AI tools are broad and generic. S8NT AI is being built with a more intentional focus, clearer context, and deeper cultural relevance.',
             },
             {
-              title: 'What Founders Support',
-              text: 'Founder contributions help fund development, design improvements, infrastructure, and the initial launch of the platform.',
+              title: 'From Insight to Business Execution',
+              text: 'S8NT AI bridges the gap between learning and application — turning information into usable output for business, writing, and communication.',
             },
           ].map((item) => (
             <div
@@ -295,9 +344,9 @@ export default function HomePage() {
             }}
           >
             {[
-              'Lifetime free access',
-              'Recognition as an early supporter',
-              'Founding member badge',
+              'Lifetime free access — no monthly fees, ever',
+              'Founding member badge and recognition',
+              'Priority support and faster response times',
               'Priority updates and launch news',
             ].map((benefit) => (
               <div
