@@ -8,18 +8,13 @@ export default function HomePage() {
   const { isSignedIn } = useUser();
   const router = useRouter();
 
-  const handleFounderClick = () => {
+  const handleWaitlistClick = () => {
     if (isSignedIn) {
-      router.push('/founder');
+      router.push('/waitlist');
     } else {
-      router.push('/signup?redirect_url=/founder');
+      router.push('/signup?redirect_url=/waitlist');
     }
   };
-
-  const founderCount = 0;
-  const founderLimit = 100;
-  const spotsRemaining = founderLimit - founderCount;
-  const progressPercent = (founderCount / founderLimit) * 100;
 
   return (
     <main
@@ -31,59 +26,6 @@ export default function HomePage() {
         fontFamily: 'Arial, sans-serif',
       }}
     >
-      <section
-        style={{
-          borderBottom: '1px solid rgba(255,255,255,0.12)',
-          background: 'rgba(255,255,255,0.04)',
-          padding: '14px 20px',
-          position: 'sticky',
-          top: 0,
-          backdropFilter: 'blur(8px)',
-          zIndex: 10,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1100px',
-            margin: '0 auto',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: '16px',
-              flexWrap: 'wrap',
-              marginBottom: '10px',
-              fontSize: '14px',
-              fontWeight: 700,
-            }}
-          >
-            <span>{founderCount} Founders Joined</span>
-            <span>{spotsRemaining} Founder Spots Remaining</span>
-          </div>
-
-          <div
-            style={{
-              width: '100%',
-              height: '10px',
-              background: 'rgba(255,255,255,0.12)',
-              borderRadius: '999px',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                width: `${progressPercent}%`,
-                height: '100%',
-                background: 'white',
-                borderRadius: '999px',
-              }}
-            />
-          </div>
-        </div>
-      </section>
-
       <section
         style={{
           maxWidth: '1100px',
@@ -111,7 +53,7 @@ export default function HomePage() {
             fontWeight: 800,
           }}
         >
-          S8NT AI. Designed for Research, Culture, and Real-World Application
+          Most AI Tools Don't Tell The Full Story
         </h1>
 
         <p
@@ -123,7 +65,9 @@ export default function HomePage() {
             color: '#d1d5db',
           }}
         >
-          S8NT AI is built for deeper inquiry — helping users explore history, culture, and complex ideas — while also providing practicaltools for writing, communication, and business use.
+          S8NT AI is built for deeper inquiry — helping users explore history,
+          culture, and complex ideas — while also providing practical tools for
+          writing, communication, and business use.
         </p>
 
         <div
@@ -148,57 +92,57 @@ export default function HomePage() {
           />
         </div>
 
-<section
-  style={{
-    maxWidth: '1100px',
-    margin: '0 auto',
-    padding: '40px 20px 60px',
-    textAlign: 'center',
-  }}
->
-  <h2
-    style={{
-      fontSize: '1.8rem',
-      marginBottom: '16px',
-      fontWeight: 800,
-    }}
-  >
-    From Research to Real-World Use
-  </h2>
+        <section
+          style={{
+            maxWidth: '1100px',
+            margin: '0 auto',
+            padding: '40px 20px 60px',
+            textAlign: 'center',
+          }}
+        >
+          <h2
+            style={{
+              fontSize: '1.8rem',
+              marginBottom: '16px',
+              fontWeight: 800,
+            }}
+          >
+            From Research to Real-World Use
+          </h2>
 
-  <p
-    style={{
-      maxWidth: '680px',
-      margin: '0 auto 30px',
-      color: '#d1d5db',
-      lineHeight: 1.7,
-    }}
-  >
-    S8NT AI isn’t just for exploring ideas — it helps you apply them.
-    Generate website copy, refine messaging, and turn knowledge into
-    real business output.
-  </p>
+          <p
+            style={{
+              maxWidth: '680px',
+              margin: '0 auto 30px',
+              color: '#d1d5db',
+              lineHeight: 1.7,
+            }}
+          >
+            S8NT AI isn’t just for exploring ideas — it helps you apply them.
+            Generate website copy, refine messaging, and turn knowledge into
+            real business output.
+          </p>
 
-  <div
-    style={{
-      display: 'flex',
-      justifyContent: 'center',
-    }}
-  >
-    <Image
-      src="/web-copy.png"
-      alt="S8NT AI Website Copy Example"
-      width={380}
-      height={300}
-      style={{
-        borderRadius: '16px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        maxWidth: '100%',
-        height: 'auto',
-      }}
-    />
-  </div>
-</section>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <Image
+              src="/web-copy.png"
+              alt="S8NT AI Website Copy Example"
+              width={380}
+              height={300}
+              style={{
+                borderRadius: '16px',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
+          </div>
+        </section>
 
         <div
           style={{
@@ -209,7 +153,7 @@ export default function HomePage() {
           }}
         >
           <button
-            onClick={handleFounderClick}
+            onClick={handleWaitlistClick}
             style={{
               padding: '14px 28px',
               borderRadius: '999px',
@@ -221,29 +165,7 @@ export default function HomePage() {
               cursor: 'pointer',
             }}
           >
-            Become a Founder
-          </button>
-
-          <button
-            onClick={() => {
-  if (isSignedIn) {
-    router.push('/waitlist');
-  } else {
-    router.push('/signup?redirect_url=/waitlist');
-  }
-}}
-            style={{
-              padding: '14px 28px',
-              borderRadius: '999px',
-              border: '1px solid rgba(255,255,255,0.25)',
-              background: 'transparent',
-              color: '#F59E0B',
-              fontWeight: 700,
-              fontSize: '1rem',
-              cursor: 'pointer',
-            }}
-          >
-            Join the Waitlist
+            Get Free Access
           </button>
         </div>
       </section>
@@ -311,63 +233,6 @@ export default function HomePage() {
 
       <section
         style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
-          padding: '0 20px 70px',
-        }}
-      >
-        <div
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '24px',
-            padding: '32px',
-          }}
-        >
-          <h2
-            style={{
-              margin: '0 0 18px',
-              fontSize: '1.8rem',
-              fontWeight: 800,
-              textAlign: 'center',
-            }}
-          >
-            Founder Benefits
-          </h2>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '16px',
-              marginTop: '20px',
-            }}
-          >
-            {[
-              'Lifetime free access — no monthly fees, ever',
-              'Founding member badge and recognition',
-              'Priority support and faster response times',
-              'Priority updates and launch news',
-            ].map((benefit) => (
-              <div
-                key={benefit}
-                style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  borderRadius: '16px',
-                  padding: '18px',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  fontWeight: 700,
-                }}
-              >
-                {benefit}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section
-        style={{
           maxWidth: '900px',
           margin: '0 auto',
           padding: '0 20px 90px',
@@ -381,7 +246,7 @@ export default function HomePage() {
             fontWeight: 800,
           }}
         >
-          Limited to 100 founding members
+          Get Free Access
         </h2>
 
         <p
@@ -392,12 +257,11 @@ export default function HomePage() {
             margin: '0 auto 26px',
           }}
         >
-          Join early, support the launch, and secure your place as one of the
-          first supporters behind S8NT AI.
+          Be among the first to access S8NT AI and stay updated on the launch.
         </p>
 
         <button
-          onClick={handleFounderClick}
+          onClick={handleWaitlistClick}
           style={{
             padding: '16px 34px',
             borderRadius: '999px',
@@ -409,7 +273,7 @@ export default function HomePage() {
             cursor: 'pointer',
           }}
         >
-          Become a Founder
+          Get Free Access
         </button>
       </section>
     </main>
