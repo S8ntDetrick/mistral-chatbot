@@ -1,31 +1,44 @@
-"use client";
-import { useUser } from "@clerk/nextjs";
-
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
-  const { priceId, userId } = await req.json();
+  try {
+    const { priceId, userId } = await req.json();
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
+    if (!priceId || !userId) {
+      return NextResponse.json(
+        { error: "Missing priceId or userId" },
+        { status: 400 }
+      );
+    }
+
+    const origin = new URL(req.url).origin;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${origin}/success`,
+      cancel_url: `${origin}/pricing`,
+      metadata: {
+        userId,
       },
-    ],
-    success_url: "http://localhost:3000/success",
-    cancel_url: "http://localhost:3000/pricing",
-    metadata: {
-      userId,
-    },
-  });
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    console.error("Stripe checkout error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to create checkout session" },
+      { status: 500 }
+    );
+  }
 }
