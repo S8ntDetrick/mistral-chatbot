@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error("Missing STRIPE_SECRET_KEY");
+  }
+
+  return new Stripe(secretKey);
+}
 
 export async function POST(req: Request) {
   try {
+    const stripe = getStripe();
     const { priceId, userId } = await req.json();
 
     if (!priceId || !userId) {
@@ -19,17 +28,10 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/success`,
       cancel_url: `${origin}/pricing`,
-      metadata: {
-        userId,
-      },
+      metadata: { userId },
     });
 
     return NextResponse.json({ url: session.url });
