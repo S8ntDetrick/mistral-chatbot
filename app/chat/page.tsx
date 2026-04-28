@@ -278,7 +278,6 @@ export default function ChatPage() {
 
   {isLoaded && user ? (
     <UserButton
-  afterSignOutUrl="/chat"
   appearance={{
     elements: {
       avatarBox: "h-12 w-12",
