@@ -16,6 +16,7 @@ export async function POST(req: Request) {
     const stripe = getStripe();
     const { priceId, userId } = await req.json();
 
+    // ✅ Check required fields first
     if (!priceId || !userId) {
       return NextResponse.json(
         { error: "Missing priceId or userId" },
@@ -23,16 +24,30 @@ export async function POST(req: Request) {
       );
     }
 
+    // ✅ Only allow your actual Stripe prices
+    const allowedPriceIds = [
+      process.env.STRIPE_BASIC_PRICE_ID,
+      process.env.STRIPE_PRO_PRICE_ID,
+    ];
+
+    if (!allowedPriceIds.includes(priceId)) {
+      return NextResponse.json(
+        { error: "Invalid priceId" },
+        { status: 400 }
+      );
+    }
+
     const origin = new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      payment_method_types: ["card"],
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/success`,
-      cancel_url: `${origin}/pricing`,
-      metadata: { userId },
-    });
+  mode: "subscription",
+  payment_method_types: ["card"],
+  line_items: [{ price: priceId, quantity: 1 }],
+  success_url: `${origin}/chat?checkout=success`,
+  cancel_url: `${origin}/pricing`,
+  metadata: { userId },
+  client_reference_id: userId,
+});
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
