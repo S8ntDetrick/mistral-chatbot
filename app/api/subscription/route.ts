@@ -11,7 +11,9 @@ export async function GET() {
 
   const { data, error } = await supabaseAdmin
     .from("subscriptions")
-    .select("tier, status, stripe_customer_id")
+    .select(
+      "tier, status, stripe_customer_id, cancel_at_period_end, current_period_end"
+    )
     .eq("clerk_user_id", userId)
     .maybeSingle();
 
@@ -27,6 +29,8 @@ export async function GET() {
       tier: "free",
       status: "none",
       stripe_customer_id: null,
+      cancel_at_period_end: false,
+      current_period_end: null,
     });
   }
 
@@ -34,5 +38,7 @@ export async function GET() {
     tier: data.tier || "free",
     status: data.status || "none",
     stripe_customer_id: data.stripe_customer_id || null,
+    cancel_at_period_end: data.cancel_at_period_end || false,
+    current_period_end: data.current_period_end || null,
   });
 }

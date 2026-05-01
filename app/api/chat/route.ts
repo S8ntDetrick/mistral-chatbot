@@ -1,6 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getUserTier } from "@/lib/getUserTier";
+
+const QUESTION_LIMITS = {
+  free: 12,
+  basic: 40,
+  pro: null,
+} as const;
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -18,17 +25,12 @@ export async function POST(req: Request) {
 
   const { data: sub } = await supabaseAdmin
     .from("subscriptions")
-    .select("tier")
+    .select("tier, status, cancel_at_period_end, current_period_end")
     .eq("clerk_user_id", userId)
-    .single();
+    .maybeSingle();
 
-  const tier = sub?.tier || "free";
-
-  // ✅ Fix: allow null for unlimited
-  let limit: number | null = 12;
-
-  if (tier === "basic") limit = 40;
-  if (tier === "pro") limit = null;
+  const tier = getUserTier(sub);
+  const limit = QUESTION_LIMITS[tier];
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
     .from("usage_tracking")
     .select("*")
     .eq("clerk_user_id", userId)
-    .single();
+    .maybeSingle();
 
   let used = usage?.daily_questions_used || 0;
   const lastReset = usage?.last_reset_date;
@@ -54,7 +56,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ Fix: safe unlimited check
   if (limit !== null && used >= limit) {
     return NextResponse.json(
       {
@@ -81,10 +82,8 @@ export async function POST(req: Request) {
     { onConflict: "clerk_user_id" }
   );
 
-  // TEMPORARY RESPONSE UNTIL RUNPOD IS ACTIVE
   const response = `S8NT response to: "${prompt}"`;
 
-  // ✅ Only paid users get saved chats
   if (tier === "basic" || tier === "pro") {
     await supabaseAdmin.from("chats").insert([
       {
@@ -107,6 +106,6 @@ export async function POST(req: Request) {
     allowed: true,
     tier,
     used: used + 1,
-    limit: tier === "pro" ? "unlimited" : limit,
+    limit: limit === null ? "unlimited" : limit,
   });
 }

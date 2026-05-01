@@ -13,6 +13,12 @@ function getStripe() {
   return new Stripe(secretKey);
 }
 
+// ✅ NEW: Safe helper for period end
+function getCurrentPeriodEnd(subscription: Stripe.Subscription) {
+  const periodEnd = subscription.items?.data?.[0]?.current_period_end;
+  return periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+}
+
 export async function POST(req: Request) {
   try {
     const stripe = getStripe();
@@ -45,10 +51,12 @@ export async function POST(req: Request) {
       const subscriptionId = fullSession.subscription as string;
       const priceId = fullSession.line_items?.data?.[0]?.price?.id;
 
-      if (!userId) {
-        console.error("No userId found in checkout session metadata");
+      if (!userId || !subscriptionId) {
+        console.error("Missing userId or subscriptionId in checkout session");
         return NextResponse.json({ received: true });
       }
+
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
       let tier = "free";
 
@@ -66,7 +74,9 @@ export async function POST(req: Request) {
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
           tier,
-          status: "active",
+          status: subscription.status,
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          current_period_end: getCurrentPeriodEnd(subscription), // ✅ FIXED
           updated_at: new Date().toISOString(),
         },
         {
@@ -84,7 +94,6 @@ export async function POST(req: Request) {
 
     if (event.type === "customer.subscription.updated") {
       const subscription = event.data.object as Stripe.Subscription;
-
       const status = subscription.status;
 
       const shouldDowngrade =
@@ -97,7 +106,9 @@ export async function POST(req: Request) {
           .from("subscriptions")
           .update({
             tier: "free",
-            status: status,
+            status,
+            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_end: getCurrentPeriodEnd(subscription), // ✅ FIXED
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_subscription_id", subscription.id);
@@ -108,6 +119,23 @@ export async function POST(req: Request) {
         }
 
         console.log("User downgraded due to subscription status:", status);
+      } else {
+        const { error } = await supabaseAdmin
+          .from("subscriptions")
+          .update({
+            status,
+            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_end: getCurrentPeriodEnd(subscription), // ✅ FIXED
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subscription.id);
+
+        if (error) {
+          console.error("Supabase subscription update error:", error);
+          return new NextResponse("Database update failed", { status: 500 });
+        }
+
+        console.log("Subscription updated:", subscription.id, status);
       }
     }
 
@@ -119,6 +147,7 @@ export async function POST(req: Request) {
         .update({
           tier: "free",
           status: "canceled",
+          cancel_at_period_end: false,
           updated_at: new Date().toISOString(),
         })
         .eq("stripe_subscription_id", subscription.id);
@@ -128,18 +157,16 @@ export async function POST(req: Request) {
         return new NextResponse("Database update failed", { status: 500 });
       }
 
-      console.log("User subscription canceled and downgraded to free");
+      console.log("User subscription ended and downgraded to free");
     }
 
     if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object as Stripe.Invoice;
-
       const customerId = invoice.customer as string;
 
       const { error } = await supabaseAdmin
         .from("subscriptions")
         .update({
-          tier: "free",
           status: "past_due",
           updated_at: new Date().toISOString(),
         })
@@ -150,7 +177,7 @@ export async function POST(req: Request) {
         return new NextResponse("Database update failed", { status: 500 });
       }
 
-      console.log("Payment failed. User downgraded to free.");
+      console.log("Payment failed. Subscription marked as past_due.");
     }
 
     return NextResponse.json({ received: true });
