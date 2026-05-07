@@ -5,7 +5,10 @@ export async function POST(req: Request) {
   const { userId } = await auth();
 
   if (!userId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { message: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const body = await req.json();
@@ -19,19 +22,28 @@ export async function POST(req: Request) {
   }
 
   try {
-    const backendUrl = process.env.IMAGE_GENERATOR_URL;
+    const backendUrl = process.env.RUNPOD_IMAGE_URL;
+    const secret = process.env.RUNPOD_IMAGE_SECRET;
 
     if (!backendUrl) {
       return NextResponse.json(
-        { message: "Image generator URL is not configured" },
+        { message: "RUNPOD_IMAGE_URL is missing" },
         { status: 500 }
       );
     }
 
-    const res = await fetch(`${backendUrl}/generate`, {
+    if (!secret) {
+      return NextResponse.json(
+        { message: "RUNPOD_IMAGE_SECRET is missing" },
+        { status: 500 }
+      );
+    }
+
+    const res = await fetch(backendUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": secret,
       },
       body: JSON.stringify({
         prompt,
@@ -42,7 +54,12 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       return NextResponse.json(
-        { message: data.error || data.message || "Image generation failed" },
+        {
+          message:
+            data.error ||
+            data.message ||
+            "Image generation failed",
+        },
         { status: res.status }
       );
     }
@@ -50,6 +67,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       imageUrl: data.imageUrl || data.url || data.image,
     });
+
   } catch (error) {
     console.error("IMAGE GENERATION ERROR:", error);
 
