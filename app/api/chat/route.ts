@@ -73,6 +73,33 @@ export async function POST(req: Request) {
     );
   }
 
+  const runpodRes = await fetch(process.env.RUNPOD_CHATBOT_URL!, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.RUNPOD_CHATBOT_SECRET!,
+    },
+    body: JSON.stringify({
+      prompt,
+      account_tier: tier,
+    }),
+  });
+
+  if (!runpodRes.ok) {
+    const errorText = await runpodRes.text();
+
+    return NextResponse.json(
+      {
+        error: "Chatbot backend error",
+        details: errorText,
+      },
+      { status: 500 }
+    );
+  }
+
+  const runpodData = await runpodRes.json();
+  const response = runpodData.response;
+
   await supabaseAdmin.from("usage_tracking").upsert(
     {
       clerk_user_id: userId,
@@ -81,8 +108,6 @@ export async function POST(req: Request) {
     },
     { onConflict: "clerk_user_id" }
   );
-
-  const response = `S8NT response to: "${prompt}"`;
 
   if (tier === "basic" || tier === "pro") {
     await supabaseAdmin.from("chats").insert([

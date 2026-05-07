@@ -13,21 +13,13 @@ type SavedChat = {
   id: string;
   title: string;
   messages: Message[];
-  images?: GeneratedImage[];
   created_at: string;
   updated_at: string;
-};
-
-type GeneratedImage = {
-  prompt: string;
-  url: string;
 };
 
 export default function ChatPage() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [images, setImages] = useState<GeneratedImage[]>([]);
-  const [activeTab, setActiveTab] = useState<"chat" | "images">("chat");
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [saveMessage, setSaveMessage] = useState("");
@@ -41,7 +33,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, images, isLoading]);
+  }, [messages, isLoading]);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -83,7 +75,10 @@ export default function ChatPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: userMessage }),
+        body: JSON.stringify({
+          prompt: userMessage,
+          conversation_id: currentChatId,
+        }),
       });
 
       const data = await res.json();
@@ -91,7 +86,10 @@ export default function ChatPage() {
       if (!res.ok) {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: data.message || "Something went wrong." },
+          {
+            role: "assistant",
+            content: data.message || data.error || "Something went wrong.",
+          },
         ]);
         return;
       }
@@ -105,50 +103,6 @@ export default function ChatPage() {
         ...prev,
         { role: "assistant", content: "Unable to connect to S8NT right now." },
       ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGenerateImage = async () => {
-    if (!isLoaded) return;
-    if (!input.trim() || isLoading) return;
-
-    if (!user) {
-      router.push("/signup");
-      return;
-    }
-
-    const imagePrompt = input.trim();
-
-    setInput("");
-    setIsLoading(true);
-    setSaveMessage("");
-
-    try {
-      const res = await fetch("/api/images", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: imagePrompt }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Image generation failed.");
-        return;
-      }
-
-      const imageUrl = data.imageUrl || data.url || data.image;
-
-      if (!imageUrl) {
-        alert("Image generated, but no image URL was returned.");
-        return;
-      }
-
-      setImages((prev) => [...prev, { prompt: imagePrompt, url: imageUrl }]);
-    } catch {
-      alert("Unable to connect to image generator.");
     } finally {
       setIsLoading(false);
     }
@@ -174,7 +128,6 @@ export default function ChatPage() {
             ? {}
             : { title: messages[0]?.content?.slice(0, 50) || "New Chat" }),
           messages,
-          images,
         }),
       });
 
@@ -195,12 +148,10 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     setMessages([]);
-    setImages([]);
     setInput("");
     setIsLoading(false);
     setSaveMessage("");
     setCurrentChatId(null);
-    setActiveTab("chat");
   };
 
   return (
@@ -231,10 +182,8 @@ export default function ChatPage() {
                     <button
                       onClick={() => {
                         setMessages(chat.messages);
-                        setImages(chat.images || []);
                         setCurrentChatId(chat.id);
                         setSaveMessage("");
-                        setActiveTab("chat");
                       }}
                       className="w-full rounded-xl bg-[#161616] px-4 py-3 pr-16 text-left text-sm text-white/80 hover:bg-[#1f1f1f] transition"
                     >
@@ -255,7 +204,6 @@ export default function ChatPage() {
                             id: chat.id,
                             title: newTitle,
                             messages: chat.messages,
-                            images: chat.images || [],
                           }),
                         });
 
@@ -356,112 +304,57 @@ export default function ChatPage() {
             </div>
           </div>
 
-          <div className="flex border-b border-white/10">
-            <button
-              onClick={() => setActiveTab("chat")}
-              className={`flex-1 py-3 text-sm font-semibold transition ${
-                activeTab === "chat"
-                  ? "text-[#E8973A] border-b-2 border-[#E8973A]"
-                  : "text-white/50 hover:text-white"
-              }`}
-            >
-              Chat
-            </button>
-
-            <button
-              onClick={() => setActiveTab("images")}
-              className={`flex-1 py-3 text-sm font-semibold transition ${
-                activeTab === "images"
-                  ? "text-[#E8973A] border-b-2 border-[#E8973A]"
-                  : "text-white/50 hover:text-white"
-              }`}
-            >
-              Images
-            </button>
-          </div>
-
           <div className="flex-1 overflow-y-auto p-6">
-            {activeTab === "chat" ? (
-              messages.length === 0 && !isLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-white/40 text-xl">
-                    Let&apos;s turn the world upside down...
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={
-                        message.role === "user"
-                          ? "flex justify-end"
-                          : "flex justify-start"
-                      }
-                    >
-                      <div
-                        className={
-                          message.role === "user"
-                            ? "max-w-[70%] rounded-2xl bg-[#E8973A] text-black px-5 py-3 text-lg font-medium"
-                            : "max-w-[75%] rounded-2xl bg-[#1b1b1b] px-5 py-4 text-lg leading-8 text-white"
-                        }
-                      >
-                        {message.role === "assistant" &&
-                        message.content?.includes("Upgrade") ? (
-                          <div className="flex flex-col gap-3">
-                            <span>
-                              {message.content.replace(/https?:\/\/[^\s]+/, "")}
-                            </span>
-
-                            <a
-                              href="https://s8nt.ai/pricing"
-                              target="_blank"
-                              className="inline-block rounded-xl bg-[#E8973A] px-4 py-3 text-center text-black font-semibold hover:brightness-105 transition"
-                            >
-                              Upgrade Now
-                            </a>
-                          </div>
-                        ) : (
-                          message.content || ""
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[75%] rounded-2xl bg-[#1b1b1b] px-5 py-4 text-lg text-white/70">
-                        S8NT is thinking...
-                      </div>
-                    </div>
-                  )}
-
-                  <div ref={bottomRef} />
-                </div>
-              )
-            ) : images.length === 0 && !isLoading ? (
+            {messages.length === 0 && !isLoading ? (
               <div className="h-full flex items-center justify-center">
                 <p className="text-white/40 text-xl">
-                  Describe an image to generate...
+                  Let&apos;s turn the world upside down...
                 </p>
               </div>
             ) : (
               <div className="space-y-6">
-                {images.map((image, index) => (
-                  <div key={index} className="rounded-2xl bg-[#1b1b1b] p-4">
-                    <p className="mb-3 text-white/70">{image.prompt}</p>
-                    <img
-                      src={image.url}
-                      alt={image.prompt}
-                      className="w-full rounded-xl border border-white/10"
-                    />
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={
+                      message.role === "user"
+                        ? "flex justify-end"
+                        : "flex justify-start"
+                    }
+                  >
+                    <div
+                      className={
+                        message.role === "user"
+                          ? "max-w-[70%] rounded-2xl bg-[#E8973A] text-black px-5 py-3 text-lg font-medium"
+                          : "max-w-[75%] rounded-2xl bg-[#1b1b1b] px-5 py-4 text-lg leading-8 text-white"
+                      }
+                    >
+                      {message.role === "assistant" &&
+                      message.content?.includes("Upgrade") ? (
+                        <div className="flex flex-col gap-3">
+                          <span>
+                            {message.content.replace(/https?:\/\/[^\s]+/, "")}
+                          </span>
+
+                          <a
+                            href="https://s8nt.ai/pricing"
+                            target="_blank"
+                            className="inline-block rounded-xl bg-[#E8973A] px-4 py-3 text-center text-black font-semibold hover:brightness-105 transition"
+                          >
+                            Upgrade Now
+                          </a>
+                        </div>
+                      ) : (
+                        message.content || ""
+                      )}
+                    </div>
                   </div>
                 ))}
 
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="max-w-[75%] rounded-2xl bg-[#1b1b1b] px-5 py-4 text-lg text-white/70">
-                      Generating image...
+                      S8NT is thinking...
                     </div>
                   </div>
                 )}
@@ -483,29 +376,19 @@ export default function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    activeTab === "chat" ? handleSend() : handleGenerateImage();
+                    handleSend();
                   }
                 }}
-                placeholder={
-                  activeTab === "chat"
-                    ? "Ask something..."
-                    : "Describe an image..."
-                }
+                placeholder="Ask something..."
                 className="w-full rounded-2xl bg-[#1a1a1a] border border-white/10 px-5 py-4 text-lg text-white placeholder:text-white/40 outline-none focus:border-[#E8973A]"
               />
 
               <button
-                onClick={activeTab === "chat" ? handleSend : handleGenerateImage}
+                onClick={handleSend}
                 disabled={isLoading || !input.trim()}
                 className="w-full rounded-2xl bg-[#E8973A] py-4 text-xl font-semibold text-black hover:brightness-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading
-                  ? activeTab === "chat"
-                    ? "Thinking..."
-                    : "Generating..."
-                  : activeTab === "chat"
-                  ? "Send"
-                  : "Generate Image"}
+                {isLoading ? "Thinking..." : "Send"}
               </button>
             </div>
           </div>
