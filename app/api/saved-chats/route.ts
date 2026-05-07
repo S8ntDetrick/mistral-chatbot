@@ -13,7 +13,7 @@ export async function GET() {
 
   const { data, error } = await supabaseAdmin
     .from("saved_chats")
-    .select("id, title, messages, created_at, updated_at")
+    .select("id, title, messages, images, created_at, updated_at")
     .eq("clerk_user_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { id, title, messages } = body;
+  const { id, title, messages, images } = body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "No messages to save" }, { status: 400 });
@@ -49,11 +49,12 @@ export async function POST(req: Request) {
       .update({
         ...(title ? { title: chatTitle } : {}),
         messages,
+        images: images || [],
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
       .eq("clerk_user_id", userId)
-      .select("id, title, messages, created_at, updated_at")
+      .select("id, title, messages, images, created_at, updated_at")
       .single();
 
     if (error) {
@@ -106,9 +107,10 @@ export async function POST(req: Request) {
       clerk_user_id: userId,
       title: chatTitle,
       messages,
+      images: images || [],
       updated_at: new Date().toISOString(),
     })
-    .select("id, title, messages, created_at, updated_at")
+    .select("id, title, messages, images, created_at, updated_at")
     .single();
 
   if (error) {
