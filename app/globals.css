@@ -36,7 +36,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* S8NT slideshow */
+/* =========================
+   S8NT SLIDESHOW
+========================= */
 
 .s8nt-slideshow-section {
   width: 100%;
@@ -80,7 +82,9 @@ body {
   }
 }
 
-/* THIS IS THE PART YOUR CURRENT JSX NEEDS */
+/* =========================
+   GENERAL SCROLL ANIMATION
+========================= */
 
 @keyframes scroll {
   from {
@@ -100,6 +104,30 @@ body {
   will-change: transform;
 }
 
+/* =========================
+   FOUNDERS GUIDE SLIDESHOW
+========================= */
+
+@keyframes founderMarquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-founder-marquee {
+  animation: founderMarquee 28s linear infinite;
+  will-change: transform;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
 @media (max-width: 700px) {
   .s8nt-slide-card {
     width: 220px;
@@ -114,5 +142,9 @@ body {
 
   .animate-scroll {
     animation-duration: 28s;
+  }
+
+  .animate-founder-marquee {
+    animation-duration: 22s;
   }
 }
