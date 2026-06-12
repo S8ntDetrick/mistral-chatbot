@@ -19,8 +19,100 @@
   }
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* S8NT slideshow */
+
+.s8nt-slideshow-section {
+  width: 100%;
+  overflow: hidden;
+  padding: 10px 0 60px;
+}
+
+.s8nt-slideshow-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 24px;
+  width: max-content;
+  animation: s8ntSlideScroll 35s linear infinite;
+}
+
+.s8nt-slide-card {
+  flex: 0 0 auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.s8nt-slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes s8ntSlideScroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* THIS IS THE PART YOUR CURRENT JSX NEEDS */
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation-name: scroll;
+  animation-duration: 35s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@media (max-width: 700px) {
+  .s8nt-slide-card {
+    width: 220px;
+    height: 220px;
+    border-radius: 20px;
+  }
+
+  .s8nt-slideshow-track {
+    gap: 16px;
+    animation-duration: 28s;
+  }
+
+  .animate-scroll {
+    animation-duration: 28s;
+  }
 }
